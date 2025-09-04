@@ -1,8 +1,10 @@
 import { 
-  users, posts, categories, media, settings, testimonials,
+  users, posts, categories, media, settings, testimonials, navigation, elements, pages,
   type User, type InsertUser, type Post, type InsertPost,
   type Category, type InsertCategory, type Media, type InsertMedia,
-  type Setting, type InsertSetting, type Testimonial, type InsertTestimonial
+  type Setting, type InsertSetting, type Testimonial, type InsertTestimonial,
+  type Navigation, type InsertNavigation, type Element, type InsertElement,
+  type Page, type InsertPage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -49,6 +51,30 @@ export interface IStorage {
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   updateTestimonial(id: number, updates: Partial<InsertTestimonial>): Promise<Testimonial | undefined>;
   deleteTestimonial(id: number): Promise<boolean>;
+  
+  // Navigation operations
+  getNavigation(location?: string): Promise<Navigation[]>;
+  getNavigationItem(id: number): Promise<Navigation | undefined>;
+  createNavigationItem(navigation: InsertNavigation): Promise<Navigation>;
+  updateNavigationItem(id: number, updates: Partial<InsertNavigation>): Promise<Navigation | undefined>;
+  deleteNavigationItem(id: number): Promise<boolean>;
+  
+  // Element operations
+  getElements(type?: string): Promise<Element[]>;
+  getElement(id: number): Promise<Element | undefined>;
+  getElementBySlug(slug: string): Promise<Element | undefined>;
+  createElement(element: InsertElement): Promise<Element>;
+  updateElement(id: number, updates: Partial<InsertElement>): Promise<Element | undefined>;
+  deleteElement(id: number): Promise<boolean>;
+  
+  // Page operations
+  getPages(status?: string): Promise<Page[]>;
+  getPageById(id: number): Promise<Page | undefined>;
+  getPageBySlug(slug: string): Promise<Page | undefined>;
+  getHomePage(): Promise<Page | undefined>;
+  createPage(page: InsertPage): Promise<Page>;
+  updatePage(id: number, updates: Partial<InsertPage>): Promise<Page | undefined>;
+  deletePage(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -238,6 +264,130 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTestimonial(id: number): Promise<boolean> {
     const result = await db.delete(testimonials).where(eq(testimonials.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Navigation operations
+  async getNavigation(location?: string): Promise<Navigation[]> {
+    const conditions = [eq(navigation.isActive, true)];
+    
+    if (location) {
+      conditions.push(eq(navigation.location, location));
+    }
+    
+    return await db.select().from(navigation)
+      .where(and(...conditions))
+      .orderBy(navigation.order);
+  }
+
+  async getNavigationItem(id: number): Promise<Navigation | undefined> {
+    const [item] = await db.select().from(navigation).where(eq(navigation.id, id));
+    return item;
+  }
+
+  async createNavigationItem(insertNavigation: InsertNavigation): Promise<Navigation> {
+    const [item] = await db.insert(navigation).values(insertNavigation).returning();
+    return item;
+  }
+
+  async updateNavigationItem(id: number, updates: Partial<InsertNavigation>): Promise<Navigation | undefined> {
+    const [item] = await db
+      .update(navigation)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(navigation.id, id))
+      .returning();
+    return item;
+  }
+
+  async deleteNavigationItem(id: number): Promise<boolean> {
+    const result = await db.delete(navigation).where(eq(navigation.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Element operations
+  async getElements(type?: string): Promise<Element[]> {
+    const conditions = [eq(elements.isActive, true)];
+    
+    if (type) {
+      conditions.push(eq(elements.type, type));
+    }
+    
+    return await db.select().from(elements)
+      .where(and(...conditions))
+      .orderBy(elements.order);
+  }
+
+  async getElement(id: number): Promise<Element | undefined> {
+    const [element] = await db.select().from(elements).where(eq(elements.id, id));
+    return element;
+  }
+
+  async getElementBySlug(slug: string): Promise<Element | undefined> {
+    const [element] = await db.select().from(elements).where(eq(elements.slug, slug));
+    return element;
+  }
+
+  async createElement(insertElement: InsertElement): Promise<Element> {
+    const [element] = await db.insert(elements).values(insertElement).returning();
+    return element;
+  }
+
+  async updateElement(id: number, updates: Partial<InsertElement>): Promise<Element | undefined> {
+    const [element] = await db
+      .update(elements)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(elements.id, id))
+      .returning();
+    return element;
+  }
+
+  async deleteElement(id: number): Promise<boolean> {
+    const result = await db.delete(elements).where(eq(elements.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Page operations
+  async getPages(status?: string): Promise<Page[]> {
+    let query = db.select().from(pages);
+    
+    if (status) {
+      query = query.where(eq(pages.status, status));
+    }
+    
+    return await query.orderBy(desc(pages.updatedAt));
+  }
+
+  async getPageById(id: number): Promise<Page | undefined> {
+    const [page] = await db.select().from(pages).where(eq(pages.id, id));
+    return page;
+  }
+
+  async getPageBySlug(slug: string): Promise<Page | undefined> {
+    const [page] = await db.select().from(pages).where(eq(pages.slug, slug));
+    return page;
+  }
+
+  async getHomePage(): Promise<Page | undefined> {
+    const [page] = await db.select().from(pages).where(eq(pages.isHomePage, true));
+    return page;
+  }
+
+  async createPage(insertPage: InsertPage): Promise<Page> {
+    const [page] = await db.insert(pages).values(insertPage).returning();
+    return page;
+  }
+
+  async updatePage(id: number, updates: Partial<InsertPage>): Promise<Page | undefined> {
+    const [page] = await db
+      .update(pages)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(pages.id, id))
+      .returning();
+    return page;
+  }
+
+  async deletePage(id: number): Promise<boolean> {
+    const result = await db.delete(pages).where(eq(pages.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 }

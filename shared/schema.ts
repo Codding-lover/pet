@@ -90,6 +90,50 @@ export const testimonials = pgTable("testimonials", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Navigation menu items
+export const navigation = pgTable("navigation", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  target: text("target").default("_self"), // _self, _blank
+  order: serial("order"),
+  parentId: serial("parent_id"),
+  isActive: boolean("is_active").default(true),
+  location: text("location").notNull().default("header"), // header, footer
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Website elements (header, footer, sections)
+export const elements = pgTable("elements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // Header, Footer, Hero Section, etc.
+  type: text("type").notNull(), // header, footer, section, component
+  slug: text("slug").notNull().unique(),
+  content: jsonb("content").notNull(), // Stores element structure and styling
+  isActive: boolean("is_active").default(true),
+  order: serial("order"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Dynamic pages with drag-drop layout
+export const pages = pgTable("pages", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  content: text("content"), // CKEditor content
+  layout: jsonb("layout"), // Drag-drop layout data
+  status: text("status").notNull().default("draft"), // draft, published
+  isHomePage: boolean("is_home_page").default(false),
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  template: text("template").default("default"), // default, landing, blog
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  publishedAt: timestamp("published_at"),
+});
+
 // Schema validation
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -129,6 +173,25 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   updatedAt: true,
 });
 
+export const insertNavigationSchema = createInsertSchema(navigation).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertElementSchema = createInsertSchema(elements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPageSchema = createInsertSchema(pages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -142,3 +205,9 @@ export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
+export type InsertNavigation = z.infer<typeof insertNavigationSchema>;
+export type Navigation = typeof navigation.$inferSelect;
+export type InsertElement = z.infer<typeof insertElementSchema>;
+export type Element = typeof elements.$inferSelect;
+export type InsertPage = z.infer<typeof insertPageSchema>;
+export type Page = typeof pages.$inferSelect;

@@ -9,7 +9,9 @@ import {
   Settings, 
   LogOut,
   MessageSquare,
-  BarChart3
+  BarChart3,
+  Navigation,
+  Layout
 } from "lucide-react";
 
 interface SidebarProps {
@@ -20,6 +22,9 @@ const menuItems = [
   { icon: BarChart3, label: "Dashboard", href: "/admin" },
   { icon: FileText, label: "Posts", href: "/admin/posts" },
   { icon: FileText, label: "Pages", href: "/admin/pages" },
+  { icon: FileText, label: "Dynamic Pages", href: "/admin/pages/dynamic" },
+  { icon: Navigation, label: "Navigation", href: "/admin/navigation" },
+  { icon: Layout, label: "Elements", href: "/admin/elements" },
   { icon: MessageSquare, label: "Testimonials", href: "/admin/testimonials" },
   { icon: Image, label: "Media", href: "/admin/media" },
   { icon: Users, label: "Users", href: "/admin/users" },

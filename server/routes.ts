@@ -5,7 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import { storage } from "./storage";
 import { hashPassword, verifyPassword, requireAuth, requireAdmin, createDefaultAdmin } from "./auth";
-import { insertUserSchema, insertPostSchema, insertCategorySchema, insertTestimonialSchema, insertSettingSchema } from "@shared/schema";
+import { insertUserSchema, insertPostSchema, insertCategorySchema, insertTestimonialSchema, insertSettingSchema, insertNavigationSchema, insertElementSchema, insertPageSchema } from "@shared/schema";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -363,6 +363,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Navigation Management Routes
+  app.get('/api/admin/navigation', requireAuth, async (req, res) => {
+    try {
+      const { location } = req.query;
+      const navigation = await storage.getNavigation(location as string);
+      res.json(navigation);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch navigation' });
+    }
+  });
+
+  app.post('/api/admin/navigation', requireAuth, async (req, res) => {
+    try {
+      const navData = insertNavigationSchema.parse(req.body);
+      const navItem = await storage.createNavigationItem(navData);
+      res.json(navItem);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to create navigation item' });
+    }
+  });
+
+  app.put('/api/admin/navigation/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertNavigationSchema.partial().parse(req.body);
+      
+      const navItem = await storage.updateNavigationItem(id, updates);
+      if (!navItem) {
+        return res.status(404).json({ error: 'Navigation item not found' });
+      }
+      res.json(navItem);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update navigation item' });
+    }
+  });
+
+  app.delete('/api/admin/navigation/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteNavigationItem(id);
+      if (!success) {
+        return res.status(404).json({ error: 'Navigation item not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete navigation item' });
+    }
+  });
+
+  // Element Management Routes (Header, Footer, Sections)
+  app.get('/api/admin/elements', requireAuth, async (req, res) => {
+    try {
+      const { type } = req.query;
+      const elements = await storage.getElements(type as string);
+      res.json(elements);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch elements' });
+    }
+  });
+
+  app.get('/api/admin/elements/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const element = await storage.getElement(id);
+      if (!element) {
+        return res.status(404).json({ error: 'Element not found' });
+      }
+      res.json(element);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch element' });
+    }
+  });
+
+  app.post('/api/admin/elements', requireAuth, async (req, res) => {
+    try {
+      const elementData = insertElementSchema.parse(req.body);
+      const element = await storage.createElement(elementData);
+      res.json(element);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to create element' });
+    }
+  });
+
+  app.put('/api/admin/elements/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertElementSchema.partial().parse(req.body);
+      
+      const element = await storage.updateElement(id, updates);
+      if (!element) {
+        return res.status(404).json({ error: 'Element not found' });
+      }
+      res.json(element);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update element' });
+    }
+  });
+
+  app.delete('/api/admin/elements/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteElement(id);
+      if (!success) {
+        return res.status(404).json({ error: 'Element not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete element' });
+    }
+  });
+
+  // Dynamic Page Management Routes
+  app.get('/api/admin/pages', requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const pages = await storage.getPages(status as string);
+      res.json(pages);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch pages' });
+    }
+  });
+
+  app.get('/api/admin/pages/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const page = await storage.getPageById(id);
+      if (!page) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      res.json(page);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch page' });
+    }
+  });
+
+  app.post('/api/admin/pages', requireAuth, async (req, res) => {
+    try {
+      const pageData = insertPageSchema.parse(req.body);
+      
+      // If setting as home page, unset other home pages
+      if (pageData.isHomePage) {
+        const currentHomePage = await storage.getHomePage();
+        if (currentHomePage) {
+          await storage.updatePage(currentHomePage.id, { isHomePage: false });
+        }
+      }
+      
+      const page = await storage.createPage(pageData);
+      res.json(page);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to create page' });
+    }
+  });
+
+  app.put('/api/admin/pages/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertPageSchema.partial().parse(req.body);
+      
+      // If setting as home page, unset other home pages
+      if (updates.isHomePage) {
+        const currentHomePage = await storage.getHomePage();
+        if (currentHomePage && currentHomePage.id !== id) {
+          await storage.updatePage(currentHomePage.id, { isHomePage: false });
+        }
+      }
+      
+      const page = await storage.updatePage(id, updates);
+      if (!page) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      res.json(page);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update page' });
+    }
+  });
+
+  app.delete('/api/admin/pages/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deletePage(id);
+      if (!success) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete page' });
+    }
+  });
+
   // Public API Routes (for frontend)
   app.get('/api/posts', async (req, res) => {
     try {
@@ -379,6 +569,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(testimonials);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch testimonials' });
+    }
+  });
+
+  app.get('/api/navigation', async (req, res) => {
+    try {
+      const { location } = req.query;
+      const navigation = await storage.getNavigation(location as string);
+      res.json(navigation);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch navigation' });
+    }
+  });
+
+  app.get('/api/elements', async (req, res) => {
+    try {
+      const { type } = req.query;
+      const elements = await storage.getElements(type as string);
+      res.json(elements);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch elements' });
+    }
+  });
+
+  app.get('/api/pages/home', async (req, res) => {
+    try {
+      const page = await storage.getHomePage();
+      if (!page) {
+        return res.status(404).json({ error: 'Home page not found' });
+      }
+      res.json(page);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch home page' });
+    }
+  });
+
+  app.get('/api/pages/:slug', async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const page = await storage.getPageBySlug(slug);
+      if (!page || page.status !== 'published') {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      res.json(page);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch page' });
     }
   });
 
