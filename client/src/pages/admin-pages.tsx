@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, FileText } from "lucide-react";
 
-interface Post {
+interface Page {
   id: number;
   title: string;
   slug: string;
@@ -25,16 +25,16 @@ interface Post {
   updatedAt: string;
 }
 
-export default function AdminPosts() {
+export default function AdminPages() {
   const [showForm, setShowForm] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editingPage, setEditingPage] = useState<Page | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     content: "",
     excerpt: "",
     status: "draft",
-    type: "post",
+    type: "page",
     featuredImage: "",
     metaTitle: "",
     metaDescription: "",
@@ -43,76 +43,80 @@ export default function AdminPosts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: posts, isLoading } = useQuery({
+  const { data: pages, isLoading } = useQuery({
     queryKey: ["/api/admin/posts"],
+    queryFn: () => fetch("/api/admin/posts?type=page", { credentials: "include" }).then(res => res.json()),
   });
 
-  const createPost = useMutation({
-    mutationFn: async (postData: any) => {
-      return apiRequest("POST", "/api/admin/posts", postData);
+  const createPage = useMutation({
+    mutationFn: async (pageData: any) => {
+      return apiRequest("POST", "/api/admin/posts", { ...pageData, type: "page" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
       setShowForm(false);
-      setFormData({
-        title: "",
-        slug: "",
-        content: "",
-        excerpt: "",
-        status: "draft",
-        type: "post",
-        featuredImage: "",
-        metaTitle: "",
-        metaDescription: "",
-      });
-      toast({ title: "Success", description: "Post created successfully" });
+      resetFormData();
+      toast({ title: "Success", description: "Page created successfully" });
     },
   });
 
-  const updatePost = useMutation({
+  const updatePage = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest("PUT", `/api/admin/posts/${id}`, data);
+      return apiRequest("PUT", `/api/admin/posts/${id}`, { ...data, type: "page" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
       setShowForm(false);
-      setEditingPost(null);
-      toast({ title: "Success", description: "Post updated successfully" });
+      setEditingPage(null);
+      toast({ title: "Success", description: "Page updated successfully" });
     },
   });
 
-  const deletePost = useMutation({
+  const deletePage = useMutation({
     mutationFn: async (id: number) => {
       return apiRequest("DELETE", `/api/admin/posts/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
-      toast({ title: "Success", description: "Post deleted successfully" });
+      toast({ title: "Success", description: "Page deleted successfully" });
     },
   });
+
+  const resetFormData = () => {
+    setFormData({
+      title: "",
+      slug: "",
+      content: "",
+      excerpt: "",
+      status: "draft",
+      type: "page",
+      featuredImage: "",
+      metaTitle: "",
+      metaDescription: "",
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingPost) {
-      updatePost.mutate({ id: editingPost.id, data: formData });
+    if (editingPage) {
+      updatePage.mutate({ id: editingPage.id, data: formData });
     } else {
-      // Generate slug from title if not provided
       const slug = formData.slug || formData.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-      createPost.mutate({ ...formData, slug });
+      createPage.mutate({ ...formData, slug });
     }
   };
 
-  const handleEdit = (post: Post) => {
-    setEditingPost(post);
+  const handleEdit = (page: Page) => {
+    setEditingPage(page);
     setFormData({
-      title: post.title,
-      slug: post.slug,
-      content: post.content,
-      excerpt: post.excerpt || "",
-      status: post.status,
-      type: post.type,
-      featuredImage: post.featuredImage || "",
+      title: page.title,
+      slug: page.slug,
+      content: page.content,
+      excerpt: page.excerpt || "",
+      status: page.status,
+      type: page.type,
+      featuredImage: page.featuredImage || "",
       metaTitle: "",
       metaDescription: "",
     });
@@ -121,18 +125,8 @@ export default function AdminPosts() {
 
   const resetForm = () => {
     setShowForm(false);
-    setEditingPost(null);
-    setFormData({
-      title: "",
-      slug: "",
-      content: "",
-      excerpt: "",
-      status: "draft",
-      type: "post",
-      featuredImage: "",
-      metaTitle: "",
-      metaDescription: "",
-    });
+    setEditingPage(null);
+    resetFormData();
   };
 
   if (isLoading) {
@@ -141,28 +135,30 @@ export default function AdminPosts() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p>Loading posts...</p>
+            <p>Loading pages...</p>
           </div>
         </div>
       </AdminLayout>
     );
   }
 
+  const pagesData = pages?.filter((item: Page) => item.type === 'page') || [];
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900" data-testid="text-posts-title">Posts</h1>
-            <p className="text-gray-600">Manage your articles and pages</p>
+            <h1 className="text-3xl font-bold text-gray-900" data-testid="text-pages-title">Pages</h1>
+            <p className="text-gray-600">Manage your static pages</p>
           </div>
           <Button
             onClick={() => setShowForm(true)}
             className="flex items-center space-x-2"
-            data-testid="button-new-post"
+            data-testid="button-new-page"
           >
             <Plus className="w-4 h-4" />
-            <span>New Post</span>
+            <span>New Page</span>
           </Button>
         </div>
 
@@ -170,7 +166,7 @@ export default function AdminPosts() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">
-                {editingPost ? "Edit Post" : "Create New Post"}
+                {editingPage ? "Edit Page" : "Create New Page"}
               </h2>
               <Button variant="outline" onClick={resetForm} data-testid="button-cancel">
                 Cancel
@@ -225,7 +221,7 @@ export default function AdminPosts() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
@@ -236,18 +232,6 @@ export default function AdminPosts() {
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="published">Published</SelectItem>
                       <SelectItem value="trash">Trash</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger data-testid="select-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="post">Post</SelectItem>
-                      <SelectItem value="page">Page</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -264,8 +248,8 @@ export default function AdminPosts() {
               </div>
 
               <div className="flex space-x-4">
-                <Button type="submit" disabled={createPost.isPending || updatePost.isPending} data-testid="button-save">
-                  {editingPost ? "Update Post" : "Create Post"}
+                <Button type="submit" disabled={createPage.isPending || updatePage.isPending} data-testid="button-save">
+                  {editingPage ? "Update Page" : "Create Page"}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm} data-testid="button-cancel-form">
                   Cancel
@@ -275,54 +259,55 @@ export default function AdminPosts() {
           </Card>
         )}
 
-        {/* Posts List */}
         <Card>
           <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">All Posts</h2>
-            {posts?.length === 0 ? (
+            <h2 className="text-xl font-semibold mb-4">All Pages</h2>
+            {pagesData.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No posts yet. Create your first post!
+                No pages yet. Create your first page!
               </div>
             ) : (
               <div className="space-y-4">
-                {posts?.map((post: Post) => (
+                {pagesData.map((page: Page) => (
                   <div
-                    key={post.id}
+                    key={page.id}
                     className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-                    data-testid={`post-${post.id}`}
+                    data-testid={`page-${page.id}`}
                   >
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{post.title}</h3>
-                      <p className="text-sm text-gray-600">
-                        {post.excerpt || post.content.substring(0, 100) + "..."}
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <h3 className="font-semibold text-lg">{page.title}</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {page.excerpt || page.content.substring(0, 100) + "..."}
                       </p>
                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                         <span className={`px-2 py-1 rounded ${
-                          post.status === 'published' ? 'bg-green-100 text-green-800' :
-                          post.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                          page.status === 'published' ? 'bg-green-100 text-green-800' :
+                          page.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                          {post.status}
+                          {page.status}
                         </span>
-                        <span>{post.type}</span>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>{new Date(page.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEdit(post)}
-                        data-testid={`button-edit-${post.id}`}
+                        onClick={() => handleEdit(page)}
+                        data-testid={`button-edit-${page.id}`}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => deletePost.mutate(post.id)}
+                        onClick={() => deletePage.mutate(page.id)}
                         className="text-red-600 hover:text-red-700"
-                        data-testid={`button-delete-${post.id}`}
+                        data-testid={`button-delete-${page.id}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

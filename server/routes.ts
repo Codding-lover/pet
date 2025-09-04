@@ -5,7 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import { storage } from "./storage";
 import { hashPassword, verifyPassword, requireAuth, requireAdmin, createDefaultAdmin } from "./auth";
-import { insertUserSchema, insertPostSchema, insertCategorySchema, insertTestimonialSchema } from "@shared/schema";
+import { insertUserSchema, insertPostSchema, insertCategorySchema, insertTestimonialSchema, insertSettingSchema } from "@shared/schema";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -102,8 +102,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Management Routes
   app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
-      // We need to implement getUsers in storage - for now return empty array
-      res.json([]);
+      const users = await storage.getUsers();
+      // Remove passwords from response
+      const safeUsers = users.map(({ password, ...user }) => user);
+      res.json(safeUsers);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch users' });
     }
@@ -255,6 +257,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete testimonial' });
+    }
+  });
+
+  app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updates = insertUserSchema.partial().parse(req.body);
+      if (updates.password) {
+        updates.password = await hashPassword(updates.password);
+      }
+      
+      const user = await storage.updateUser(id, updates);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update user' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+    try {
+      const id = req.params.id;
+      // Prevent deleting self
+      if (id === req.session.userId) {
+        return res.status(400).json({ error: 'Cannot delete your own account' });
+      }
+      
+      const success = await storage.deleteUser(id);
+      if (!success) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
+  app.delete('/api/admin/media/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteMediaFile(id);
+      if (!success) {
+        return res.status(404).json({ error: 'Media file not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete media file' });
+    }
+  });
+
+  // Settings Management Routes
+  app.get('/api/admin/settings', requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+  });
+
+  app.post('/api/admin/settings', requireAuth, async (req, res) => {
+    try {
+      const settingData = insertSettingSchema.parse(req.body);
+      const setting = await storage.setSetting(settingData);
+      res.json(setting);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update setting' });
     }
   });
 
