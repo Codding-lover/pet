@@ -6,36 +6,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, Palette, Code } from "lucide-react";
+import { VisualEditor } from "@/components/builder/VisualEditor";
+import type { Page } from "@shared/schema";
 
-interface Page {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt?: string;
-  status: string;
-  type: string;
-  featuredImage?: string;
-  authorId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Using Page type from schema
 
 export default function AdminPages() {
   const [showForm, setShowForm] = useState(false);
   const [editingPage, setEditingPage] = useState<Page | null>(null);
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [editMode, setEditMode] = useState<'form' | 'builder'>('form');
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     content: "",
-    excerpt: "",
+    layout: null,
     status: "draft",
-    type: "page",
-    featuredImage: "",
+    template: "default",
+    isHomePage: false,
     metaTitle: "",
     metaDescription: "",
   });
@@ -44,17 +40,18 @@ export default function AdminPages() {
   const queryClient = useQueryClient();
 
   const { data: pages, isLoading } = useQuery({
-    queryKey: ["/api/admin/posts"],
-    queryFn: () => fetch("/api/admin/posts?type=page", { credentials: "include" }).then(res => res.json()),
+    queryKey: ["/api/admin/pages"],
+    queryFn: () => fetch("/api/admin/pages", { credentials: "include" }).then(res => res.json()),
   });
 
   const createPage = useMutation({
     mutationFn: async (pageData: any) => {
-      return apiRequest("POST", "/api/admin/posts", { ...pageData, type: "page" });
+      return apiRequest("POST", "/api/admin/pages", pageData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pages"] });
       setShowForm(false);
+      setIsBuilderOpen(false);
       resetFormData();
       toast({ title: "Success", description: "Page created successfully" });
     },
@@ -62,11 +59,12 @@ export default function AdminPages() {
 
   const updatePage = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest("PUT", `/api/admin/posts/${id}`, { ...data, type: "page" });
+      return apiRequest("PUT", `/api/admin/pages/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pages"] });
       setShowForm(false);
+      setIsBuilderOpen(false);
       setEditingPage(null);
       toast({ title: "Success", description: "Page updated successfully" });
     },
@@ -74,10 +72,10 @@ export default function AdminPages() {
 
   const deletePage = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest("DELETE", `/api/admin/posts/${id}`);
+      return apiRequest("DELETE", `/api/admin/pages/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pages"] });
       toast({ title: "Success", description: "Page deleted successfully" });
     },
   });
@@ -87,10 +85,10 @@ export default function AdminPages() {
       title: "",
       slug: "",
       content: "",
-      excerpt: "",
+      layout: null,
       status: "draft",
-      type: "page",
-      featuredImage: "",
+      template: "default",
+      isHomePage: false,
       metaTitle: "",
       metaDescription: "",
     });

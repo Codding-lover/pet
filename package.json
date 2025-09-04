@@ -11,6 +11,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@craftjs/core": "^0.2.12",
+    "@craftjs/utils": "^0.2.5",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -70,8 +72,11 @@
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
     "react": "^18.3.1",
+    "react-color": "^2.19.3",
+    "react-contenteditable": "^3.3.7",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-draggable": "^4.5.0",
     "react-hook-form": "^7.55.0",
     "react-icons": "^5.4.0",
     "react-resizable-panels": "^2.1.7",
