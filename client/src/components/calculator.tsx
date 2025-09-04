@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { getDogAgeResult, calculateAgeFromBirthday, type DogSize } from "@/lib/dog-age-calculator";
+import html2canvas from "html2canvas";
 
 type InputMethod = 'manual' | 'birthday';
 
@@ -16,6 +17,7 @@ export default function Calculator() {
   const [months, setMonths] = useState(0);
   const [birthday, setBirthday] = useState('');
   const [petName, setPetName] = useState('');
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Update age when sliders change
   useEffect(() => {
@@ -30,6 +32,47 @@ export default function Calculator() {
     if (value) {
       const calculatedAge = calculateAgeFromBirthday(value);
       setAge(calculatedAge);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (resultsRef.current) {
+      try {
+        const canvas = await html2canvas(resultsRef.current, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          logging: false,
+          useCORS: true
+        });
+        
+        const link = document.createElement('a');
+        link.download = `${petName || 'dog'}-age-result.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      } catch (error) {
+        console.error('Error generating download:', error);
+      }
+    }
+  };
+
+  const handleShare = (platform: string) => {
+    const text = `${petName || 'My dog'} is ${result.humanAge} years old in human years! Check out this amazing dog age calculator.`;
+    const url = window.location.href;
+    
+    switch (platform) {
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(`${text} ${url}`).then(() => {
+          alert('Link copied to clipboard!');
+        }).catch(() => {
+          alert('Failed to copy link');
+        });
+        break;
     }
   };
 
@@ -226,7 +269,7 @@ export default function Calculator() {
             </div>
             
             {/* Right Column - Results */}
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center">
+            <div ref={resultsRef} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center">
               {/* Green Dog Icon */}
               <div className="text-8xl mb-6 text-green-500">🐶</div>
               
@@ -240,9 +283,12 @@ export default function Calculator() {
                 Life Stage: {result.lifeStage}
               </div>
               
-              {/* Description */}
+              {/* Description with dynamic pet name */}
               <div className="text-gray-600 mb-8 text-base" data-testid="text-age-description">
-                {result.description}
+                {petName 
+                  ? `${petName} is equivalent to a ${result.humanAge}-year-old human`
+                  : result.description
+                }
               </div>
               
               {/* Pet Name Input */}
@@ -263,22 +309,34 @@ export default function Calculator() {
               
               {/* Social Buttons */}
               <div className="flex gap-3 justify-center mb-6">
-                <Button className="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-sm font-semibold">
+                <Button 
+                  onClick={() => handleShare('twitter')}
+                  className="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                >
                   <span className="mr-2">🐦</span>
                   Twitter
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold">
+                <Button 
+                  onClick={() => handleShare('facebook')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                >
                   <span className="mr-2">📘</span>
                   Facebook
                 </Button>
-                <Button className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold">
+                <Button 
+                  onClick={() => handleShare('copy')}
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                >
                   <span className="mr-2">🔗</span>
                   Copy Link
                 </Button>
               </div>
               
               {/* Download Button */}
-              <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold text-base">
+              <Button 
+                onClick={handleDownload}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold text-base"
+              >
                 <span className="mr-2">⬇️</span>
                 Download
               </Button>
