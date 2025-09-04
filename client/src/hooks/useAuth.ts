@@ -10,22 +10,26 @@ interface User {
   lastName?: string;
 }
 
+interface AuthResponse {
+  user?: User;
+}
+
 interface LoginCredentials {
   username: string;
   password: string;
 }
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<AuthResponse>({
     queryKey: ["/api/auth/me"],
     retry: false,
   });
 
   return {
-    user: user?.user as User | undefined,
+    user: data?.user,
     isLoading,
-    isAuthenticated: !!user?.user,
-    isAdmin: user?.user?.role === 'admin',
+    isAuthenticated: !!data?.user,
+    isAdmin: data?.user?.role === 'admin',
   };
 }
 
@@ -34,13 +38,7 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiRequest('POST', '/api/auth/login', credentials);
       return response;
     },
     onSuccess: () => {
@@ -54,9 +52,7 @@ export function useLogout() {
   
   return useMutation({
     mutationFn: async () => {
-      await apiRequest('/api/auth/logout', {
-        method: 'POST',
-      });
+      await apiRequest('POST', '/api/auth/logout');
     },
     onSuccess: () => {
       queryClient.clear();
