@@ -269,7 +269,7 @@ export default function Calculator() {
             </div>
             
             {/* Right Column - Results */}
-            <div ref={resultsRef} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center">
+            <div ref={resultsRef} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[600px]">
               {/* Green Dog Icon */}
               <div className="text-8xl mb-6 text-green-500">🐶</div>
               
@@ -284,7 +284,7 @@ export default function Calculator() {
               </div>
               
               {/* Description with dynamic pet name */}
-              <div className="text-gray-600 mb-8 text-base" data-testid="text-age-description">
+              <div className="text-gray-600 mb-8 text-base max-w-sm mx-auto" data-testid="text-age-description">
                 {petName 
                   ? `${petName} is equivalent to a ${result.humanAge}-year-old human`
                   : result.description
@@ -297,7 +297,7 @@ export default function Calculator() {
                 value={petName}
                 onChange={(e) => setPetName(e.target.value)}
                 placeholder="Enter your pet's name..."
-                className="mb-8 text-center border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:ring-0 text-gray-500"
+                className="mb-8 text-center border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:ring-0 text-gray-500 max-w-sm mx-auto"
                 data-testid="input-pet-name"
               />
               
@@ -308,26 +308,26 @@ export default function Calculator() {
               </div>
               
               {/* Social Buttons */}
-              <div className="flex gap-3 justify-center mb-6">
+              <div className="flex flex-wrap gap-3 justify-center mb-6 max-w-sm mx-auto">
                 <Button 
                   onClick={() => handleShare('twitter')}
-                  className="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                  className="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
                 >
-                  <span className="mr-2">🐦</span>
+                  <span className="mr-1">🐦</span>
                   Twitter
                 </Button>
                 <Button 
                   onClick={() => handleShare('facebook')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
                 >
-                  <span className="mr-2">📘</span>
+                  <span className="mr-1">📘</span>
                   Facebook
                 </Button>
                 <Button 
                   onClick={() => handleShare('copy')}
-                  className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold"
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
                 >
-                  <span className="mr-2">🔗</span>
+                  <span className="mr-1">🔗</span>
                   Copy Link
                 </Button>
               </div>
@@ -335,7 +335,7 @@ export default function Calculator() {
               {/* Download Button */}
               <Button 
                 onClick={handleDownload}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold text-base"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-base"
               >
                 <span className="mr-2">⬇️</span>
                 Download
