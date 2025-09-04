@@ -38,16 +38,24 @@ export default function Calculator() {
   const handleDownload = async () => {
     if (resultsRef.current) {
       try {
+        // Wait a bit for any pending renders
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const canvas = await html2canvas(resultsRef.current, {
           backgroundColor: '#ffffff',
           scale: 2,
           logging: false,
-          useCORS: true
+          useCORS: true,
+          allowTaint: true,
+          width: resultsRef.current.offsetWidth,
+          height: resultsRef.current.offsetHeight,
+          scrollX: 0,
+          scrollY: 0
         });
         
         const link = document.createElement('a');
         link.download = `${petName || 'dog'}-age-result.png`;
-        link.href = canvas.toDataURL();
+        link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
       } catch (error) {
         console.error('Error generating download:', error);
@@ -269,22 +277,22 @@ export default function Calculator() {
             </div>
             
             {/* Right Column - Results */}
-            <div ref={resultsRef} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[600px]">
+            <div ref={resultsRef} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 text-center flex flex-col items-center justify-start w-full max-w-md mx-auto" style={{ minHeight: '650px', width: '400px' }}>
               {/* Green Dog Icon */}
-              <div className="text-8xl mb-6 text-green-500">🐶</div>
+              <div className="text-6xl mb-4 text-green-500 mt-4">🐶</div>
               
               {/* Age Result */}
-              <div className="text-5xl font-bold text-orange-500 mb-4" data-testid="text-human-age">
+              <div className="text-4xl font-bold text-orange-500 mb-3" data-testid="text-human-age">
                 {result.humanAge} years old
               </div>
               
               {/* Life Stage */}
-              <div className="text-xl font-bold text-green-500 mb-6" data-testid="text-life-stage">
+              <div className="text-lg font-bold text-green-500 mb-4" data-testid="text-life-stage">
                 Life Stage: {result.lifeStage}
               </div>
               
               {/* Description with dynamic pet name */}
-              <div className="text-gray-600 mb-8 text-base max-w-sm mx-auto" data-testid="text-age-description">
+              <div className="text-gray-600 mb-6 text-sm px-4 leading-relaxed" data-testid="text-age-description">
                 {petName 
                   ? `${petName} is equivalent to a ${result.humanAge}-year-old human`
                   : result.description
@@ -297,35 +305,35 @@ export default function Calculator() {
                 value={petName}
                 onChange={(e) => setPetName(e.target.value)}
                 placeholder="Enter your pet's name..."
-                className="mb-8 text-center border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:ring-0 text-gray-500 max-w-sm mx-auto"
+                className="mb-6 text-center border-2 border-gray-200 rounded-xl p-2 focus:border-orange-500 focus:ring-0 text-gray-500 w-80"
                 data-testid="input-pet-name"
               />
               
               {/* Share Text */}
-              <div className="text-gray-600 mb-6 flex items-center justify-center gap-2">
+              <div className="text-gray-600 mb-4 flex items-center justify-center gap-2 text-sm">
                 <span>🔗</span>
                 <span>Share this amazing result:</span>
               </div>
               
               {/* Social Buttons */}
-              <div className="flex flex-wrap gap-3 justify-center mb-6 max-w-sm mx-auto">
+              <div className="flex gap-2 justify-center mb-6 w-full px-4">
                 <Button 
                   onClick={() => handleShare('twitter')}
-                  className="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
+                  className="bg-blue-400 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
                 >
                   <span className="mr-1">🐦</span>
                   Twitter
                 </Button>
                 <Button 
                   onClick={() => handleShare('facebook')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
                 >
                   <span className="mr-1">📘</span>
                   Facebook
                 </Button>
                 <Button 
                   onClick={() => handleShare('copy')}
-                  className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-1 min-w-[90px]"
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
                 >
                   <span className="mr-1">🔗</span>
                   Copy Link
@@ -335,7 +343,7 @@ export default function Calculator() {
               {/* Download Button */}
               <Button 
                 onClick={handleDownload}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-base"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold text-sm"
               >
                 <span className="mr-2">⬇️</span>
                 Download
