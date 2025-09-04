@@ -9,12 +9,13 @@ import { getDogAgeResult, calculateAgeFromBirthday, type DogSize } from "@/lib/d
 type InputMethod = 'manual' | 'sliders' | 'birthday';
 
 export default function Calculator() {
-  const [age, setAge] = useState(3);
-  const [size, setSize] = useState<DogSize>('medium');
-  const [inputMethod, setInputMethod] = useState<InputMethod>('birthday');
-  const [years, setYears] = useState(3);
+  const [age, setAge] = useState(1);
+  const [size, setSize] = useState<DogSize>('small');
+  const [inputMethod, setInputMethod] = useState<InputMethod>('manual');
+  const [years, setYears] = useState(1);
   const [months, setMonths] = useState(0);
   const [birthday, setBirthday] = useState('');
+  const [petName, setPetName] = useState('');
 
   // Update age when sliders change
   useEffect(() => {
@@ -39,24 +40,30 @@ export default function Calculator() {
       id: 'small',
       title: 'Small Dogs',
       subtitle: 'Under 20 lbs',
-      breeds: 'Chihuahua, Pomeranian, Yorkshire Terrier'
+      breeds: 'Chihuahua, Pomeranian, Yorkshire Terrier',
+      bgColor: 'bg-green-500',
+      textColor: 'text-white'
     },
     {
       id: 'medium',
       title: 'Medium Dogs',
       subtitle: '20-50 lbs',
-      breeds: 'Beagle, Border Collie, Bulldog'
+      breeds: 'Beagle, Border Collie, Bulldog',
+      bgColor: 'bg-gray-200',
+      textColor: 'text-gray-700'
     },
     {
       id: 'large',
       title: 'Large Dogs',
       subtitle: 'Over 50 lbs',
-      breeds: 'German Shepherd, Golden Retriever, Great Dane'
+      breeds: 'German Shepherd, Golden Retriever, Great Dane',
+      bgColor: 'bg-gray-200',
+      textColor: 'text-gray-700'
     }
   ];
 
   return (
-    <section id="calculator" className="py-16 px-4 bg-gray-50">
+    <section id="calculator" className="py-16 px-4 bg-gradient-to-br from-orange-50 to-pink-50">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4 text-gray-900">🐕 Dog Age Calculator</h2>
@@ -65,86 +72,74 @@ export default function Calculator() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Left Column - Input Controls */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white rounded-2xl p-8 shadow-lg border-0">
+        <Card className="bg-white rounded-3xl p-8 shadow-2xl border-0 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Left Column - Input Controls */}
+            <div className="space-y-8">
               {/* Input Method Selection */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-6 text-gray-900">How would you like to input your dog's age?</h3>
-                <div className="flex gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                    <span className="text-white text-sm">🐕</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">How would you like to input your dog's age?</h3>
+                </div>
+                
+                <div className="flex gap-4">
                   <Button
-                    variant={inputMethod === 'manual' ? 'default' : 'outline'}
                     onClick={() => setInputMethod('manual')}
-                    className={`rounded-full px-6 py-3 font-medium transition-all ${
+                    className={`flex-1 rounded-2xl py-6 px-4 text-center transition-all ${
                       inputMethod === 'manual' 
-                        ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-0'
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                     data-testid="button-method-manual"
                   >
-                    Manual Age
+                    <div className="flex flex-col items-center">
+                      <div className="text-2xl mb-2">📊</div>
+                      <div className="font-semibold">Manual Age</div>
+                      <div className="text-sm opacity-75">Use sliders</div>
+                    </div>
                   </Button>
+                  
                   <Button
-                    variant={inputMethod === 'sliders' ? 'default' : 'outline'}
-                    onClick={() => setInputMethod('sliders')}
-                    className={`rounded-full px-6 py-3 font-medium transition-all ${
-                      inputMethod === 'sliders' 
-                        ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-0'
-                    }`}
-                    data-testid="button-method-sliders"
-                  >
-                    Use sliders
-                  </Button>
-                  <Button
-                    variant={inputMethod === 'birthday' ? 'default' : 'outline'}
                     onClick={() => setInputMethod('birthday')}
-                    className={`rounded-full px-6 py-3 font-medium transition-all ${
+                    className={`flex-1 rounded-2xl py-6 px-4 text-center transition-all ${
                       inputMethod === 'birthday' 
-                        ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-0'
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                     data-testid="button-method-birthday"
                   >
-                    Birthday
+                    <div className="flex flex-col items-center">
+                      <div className="text-2xl mb-2">📅</div>
+                      <div className="font-semibold">Birthday</div>
+                      <div className="text-sm opacity-75">Select date</div>
+                    </div>
                   </Button>
                 </div>
               </div>
               
               {/* Age Input Section */}
-              <div className="space-y-8">
-                {/* Manual Input */}
+              <div className="space-y-6">
+                {/* Manual/Slider Input */}
                 {inputMethod === 'manual' && (
-                  <div className="space-y-4">
-                    <Label htmlFor="manual-age" className="text-lg font-semibold text-gray-900">
-                      Age: <span data-testid="text-manual-age">{age}</span> years
-                    </Label>
-                    <Input
-                      id="manual-age"
-                      type="number"
-                      min="0"
-                      max="20"
-                      step="0.1"
-                      value={age}
-                      onChange={(e) => setAge(parseFloat(e.target.value) || 0)}
-                      className="text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
-                      data-testid="input-manual-age"
-                    />
-                  </div>
-                )}
-                
-                {/* Slider Input */}
-                {inputMethod === 'sliders' && (
-                  <div className="space-y-8">
-                    <div className="space-y-4">
-                      <Label className="text-lg font-semibold text-gray-900">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      <span className="text-orange-500">📅</span>
+                      <Label className="text-lg font-semibold text-gray-800">
                         Age: <span data-testid="text-years">{years}</span> years
                       </Label>
-                      <div className="px-3">
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="px-4">
                         <Slider
                           value={[years]}
-                          onValueChange={(value) => setYears(value[0])}
+                          onValueChange={(value) => {
+                            setYears(value[0]);
+                            setAge(value[0] + months / 12);
+                          }}
                           max={20}
                           step={1}
                           className="w-full"
@@ -156,14 +151,15 @@ export default function Calculator() {
                         </div>
                       </div>
                     </div>
+                    
                     <div className="space-y-4">
-                      <Label className="text-lg font-semibold text-gray-900">
-                        Months: <span data-testid="text-months">{months}</span>
-                      </Label>
-                      <div className="px-3">
+                      <div className="px-4">
                         <Slider
                           value={[months]}
-                          onValueChange={(value) => setMonths(value[0])}
+                          onValueChange={(value) => {
+                            setMonths(value[0]);
+                            setAge(years + value[0] / 12);
+                          }}
                           max={11}
                           step={1}
                           className="w-full"
@@ -181,7 +177,7 @@ export default function Calculator() {
                 {/* Birthday Input */}
                 {inputMethod === 'birthday' && (
                   <div className="space-y-4">
-                    <Label htmlFor="birthday-date" className="text-lg font-semibold text-gray-900">
+                    <Label htmlFor="birthday-date" className="text-lg font-semibold text-gray-800">
                       Select date
                     </Label>
                     <Input
@@ -189,64 +185,101 @@ export default function Calculator() {
                       type="date"
                       value={birthday}
                       onChange={(e) => handleBirthdayChange(e.target.value)}
-                      className="text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
+                      className="text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0 bg-gray-50"
                       placeholder="mm/dd/yyyy"
                       data-testid="input-birthday"
                     />
                   </div>
                 )}
+              </div>
+              
+              {/* Dog Size Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-500">🐕</span>
+                  <h3 className="text-lg font-semibold text-gray-800">Dog Size</h3>
+                </div>
                 
-                {/* Dog Size Selection */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Dog Size</h3>
-                  <div className="space-y-3">
-                    {sizeOptions.map((option) => (
-                      <div
-                        key={option.id}
-                        className={`border-2 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${
-                          size === option.id
-                            ? 'border-orange-500 bg-orange-50'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                        onClick={() => setSize(option.id as DogSize)}
-                        data-testid={`button-size-${option.id}`}
-                      >
-                        <div className="font-semibold text-gray-900">{option.title}</div>
-                        <div className="text-sm text-gray-600 mt-1">{option.subtitle}</div>
-                        <div className="text-sm text-gray-500 mt-1">{option.breeds}</div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {sizeOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className={`rounded-2xl p-4 cursor-pointer transition-all text-center ${
+                        size === option.id
+                          ? option.bgColor + ' ' + option.textColor + ' shadow-lg'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={() => setSize(option.id as DogSize)}
+                      data-testid={`button-size-${option.id}`}
+                    >
+                      <div className="text-2xl mb-2">🐕</div>
+                      <div className="font-semibold text-sm">{option.title}</div>
+                      <div className="text-xs opacity-75 mt-1">{option.subtitle}</div>
+                      <div className="text-xs opacity-60 mt-1">{option.breeds}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </Card>
-          </div>
-          
-          {/* Right Column - Results */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white rounded-2xl p-8 shadow-lg border-0 text-center sticky top-8">
-              <div className="text-6xl mb-6">🐶</div>
-              <div className="text-4xl font-bold text-orange-500 mb-2" data-testid="text-human-age">
-                {result.humanAge} years old
-              </div>
-              <div className="text-gray-600 mb-6 text-lg" data-testid="text-age-description">
-                {result.description}
-              </div>
-              <div className="text-xl font-semibold text-green-600 mb-8" data-testid="text-life-stage">
-                Life Stage: {result.lifeStage}
-              </div>
+              
+              {/* Calculate Button */}
               <Button 
-                className="w-full py-4 text-lg font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all mb-4"
+                className="w-full py-4 text-lg font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-2xl transition-all shadow-lg"
                 data-testid="button-calculate"
               >
+                <span className="mr-2">📊</span>
                 Calculate Human Age
               </Button>
-              <div className="text-sm text-gray-500">
-                Set your dog's age and size to see the magic!
+            </div>
+            
+            {/* Right Column - Results */}
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center border border-gray-100">
+              <div className="text-8xl mb-4">🐶</div>
+              <div className="text-5xl font-bold text-orange-500 mb-2" data-testid="text-human-age">
+                {result.humanAge} years old
               </div>
-            </Card>
+              <div className="text-xl font-semibold text-green-600 mb-6" data-testid="text-life-stage">
+                Life Stage: {result.lifeStage}
+              </div>
+              <div className="text-gray-600 mb-8 text-lg" data-testid="text-age-description">
+                {result.description}
+              </div>
+              
+              <Input
+                type="text"
+                value={petName}
+                onChange={(e) => setPetName(e.target.value)}
+                placeholder="Enter your pet's name..."
+                className="mb-6 text-center border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:ring-0"
+                data-testid="input-pet-name"
+              />
+              
+              <div className="text-gray-600 mb-6">
+                <span className="mr-2">🔗</span>
+                Share this amazing result:
+              </div>
+              
+              <div className="flex gap-3 justify-center mb-6">
+                <Button className="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm">
+                  <span className="mr-1">🐦</span>
+                  Twitter
+                </Button>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm">
+                  <span className="mr-1">📘</span>
+                  Facebook
+                </Button>
+                <Button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm">
+                  <span className="mr-1">🔗</span>
+                  Copy Link
+                </Button>
+              </div>
+              
+              <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold">
+                <span className="mr-2">⬇️</span>
+                Download
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
     </section>
   );
