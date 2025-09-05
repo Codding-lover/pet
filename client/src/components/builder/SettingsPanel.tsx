@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEditor } from '@craftjs/core';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

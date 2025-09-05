@@ -9,6 +9,7 @@ import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminPosts from "@/pages/admin-posts";
 import AdminPages from "@/pages/admin-pages";
+import AdminElements from "@/pages/admin-elements";
 import AdminMedia from "@/pages/admin-media";
 import AdminUsers from "@/pages/admin-users";
 import AdminSettings from "@/pages/admin-settings";
@@ -28,8 +29,8 @@ function Router() {
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/admin/testimonials" component={AdminTestimonials} />
       <Route path="/admin/navigation" component={AdminBasic} />
-      <Route path="/admin/elements" component={AdminBasic} />
-      <Route path="/admin/pages/dynamic" component={AdminBasic} />
+      <Route path="/admin/elements" component={AdminElements} />
+      <Route path="/admin/pages/dynamic" component={AdminPages} />
       <Route component={NotFound} />
     </Switch>
   );

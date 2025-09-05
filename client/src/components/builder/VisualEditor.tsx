@@ -1,5 +1,5 @@
+import React, { useState } from 'react';
 import { Editor, Frame, Element } from '@craftjs/core';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,7 +67,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
               )}
             </Button>
             <Editor>
-              {({ query }) => (
+              {({ query }: { query: any }) => (
                 <Button
                   onClick={() => handleSave(query)}
                   disabled={previewMode}
@@ -114,12 +114,31 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   <Element
                     canvas
                     is={Container}
+                    background="transparent"
+                    padding={20}
+                    margin={0}
                     width="100%"
                     height="auto"
-                    padding={20}
+                    flexDirection="column"
+                    justifyContent="flex-start"
+                    alignItems="flex-start"
+                    gap={10}
+                    borderRadius={0}
+                    borderWidth={0}
+                    borderColor="#000000"
+                    borderStyle="none"
                     data-testid="main-canvas"
                   >
-                    <Text text="Drop components here to start building" />
+                    <Text 
+                      text="Drop components here to start building"
+                      fontSize={16}
+                      color="#666666"
+                      fontWeight="normal"
+                      textAlign="center"
+                      marginTop={0}
+                      marginBottom={0}
+                      tag="p"
+                    />
                   </Element>
                 </Frame>
               </div>

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEditor } from '@craftjs/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -59,9 +60,11 @@ export const Toolbox: React.FC = () => {
           <Card
             key={comp.name}
             className="p-3 cursor-pointer hover:bg-gray-50 transition-colors"
-            ref={(ref: HTMLDivElement) =>
-              connectors.create(ref, React.createElement(comp.component))
-            }
+            ref={(ref: HTMLDivElement) => {
+              if (ref) {
+                connectors.create(ref, React.createElement(comp.component as any));
+              }
+            }}
             data-testid={`toolbox-${comp.name.toLowerCase()}`}
           >
             <div className="flex items-center space-x-3">
